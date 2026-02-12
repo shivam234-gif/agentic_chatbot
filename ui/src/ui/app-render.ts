@@ -1,6 +1,6 @@
 import { html, nothing } from "lit";
 import type { AppViewState } from "./app-view-state.ts";
-import { parseAgentSessionKey } from "../../../src/routing/session-key.js";
+import { parseAgentSessionKey } from "../../../src/routing/session-key.ts";
 import { ChatHost, refreshChatAvatar } from "./app-chat.ts";
 import { renderChatControls, renderTab, renderThemeToggle } from "./app-render.helpers.ts";
 import { OpenClawApp } from "./app.ts";
@@ -126,10 +126,10 @@ export function renderApp(state: AppViewState) {
           </button>
           <div class="brand">
             <div class="brand-logo">
-              <img src="${logoHref}" alt="OpenClaw" />
+              <img src="${logoHref}" alt="Quantumhook" />
             </div>
             <div class="brand-text">
-              <div class="brand-title">OPENCLAW</div>
+              <div class="brand-title">QUANTUMHOOK</div>
               <div class="brand-sub">Gateway Dashboard</div>
             </div>
           </div>

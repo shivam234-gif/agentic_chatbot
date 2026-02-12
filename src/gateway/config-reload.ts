@@ -1,4 +1,4 @@
-import chokidar from "chokidar";
+import { watch } from "chokidar";
 import type { OpenClawConfig, ConfigFileSnapshot, GatewayReloadMode } from "../config/config.js";
 import { type ChannelId, listChannelPlugins } from "../channels/plugins/index.js";
 import { getActivePluginRegistry } from "../plugins/runtime.js";
@@ -355,7 +355,7 @@ export function startGatewayConfigReloader(opts: {
     }
   };
 
-  const watcher = chokidar.watch(opts.watchPath, {
+  const watcher = watch(opts.watchPath, {
     ignoreInitial: true,
     awaitWriteFinish: { stabilityThreshold: 200, pollInterval: 50 },
     usePolling: Boolean(process.env.VITEST),
