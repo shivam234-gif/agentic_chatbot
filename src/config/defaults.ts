@@ -173,6 +173,54 @@ export function applyModelDefaults(cfg: OpenClawConfig): OpenClawConfig {
   let mutated = false;
   let nextCfg = cfg;
 
+  // Inject default OpenAI provider if providers list is missing or empty
+  if (!nextCfg.models?.providers || Object.keys(nextCfg.models.providers).length === 0) {
+    nextCfg = {
+      ...nextCfg,
+      models: {
+        ...nextCfg.models,
+        providers: {
+          ...nextCfg.models?.providers,
+          openai: {
+            baseUrl: "https://api.openai.com/v1",
+            api: "openai-completions",
+            auth: "api-key",
+            models: [
+              {
+                id: "gpt-4o",
+                name: "GPT-4o",
+                contextWindow: 128000,
+                maxTokens: 4096,
+                reasoning: false,
+                input: ["text"],
+                cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+              },
+              {
+                id: "gpt-4-turbo",
+                name: "GPT-4 Turbo",
+                contextWindow: 128000,
+                maxTokens: 4096,
+                reasoning: false,
+                input: ["text"],
+                cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+              },
+              {
+                id: "gpt-3.5-turbo",
+                name: "GPT-3.5 Turbo",
+                contextWindow: 16000,
+                maxTokens: 4096,
+                reasoning: false,
+                input: ["text"],
+                cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+              },
+            ],
+          },
+        },
+      },
+    };
+    mutated = true;
+  }
+
   const providerConfig = nextCfg.models?.providers;
   if (providerConfig) {
     const nextProviders = { ...providerConfig };
