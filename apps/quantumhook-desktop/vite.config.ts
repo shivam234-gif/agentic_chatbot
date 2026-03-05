@@ -5,12 +5,13 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   base: './',
   plugins: [react()],
-  optimizeDeps: {
-    include: ["lit/directives/repeat.js"],
-  },
-  esbuild: {
-    loader: "tsx",
-    include: /src\/.*\.[tj]sx?$/,
-    exclude: [],
+
+  // Prevent Vite from clearing the terminal so Tauri logs are visible
+  clearScreen: false,
+
+  server: {
+    // Tauri expects a fixed port
+    strictPort: true,
+    port: 5173,
   },
 })
