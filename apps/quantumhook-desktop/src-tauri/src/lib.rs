@@ -1,4 +1,5 @@
 mod gateway;
+mod tray;
 
 use std::sync::Arc;
 use gateway::sidecar::{GatewayProcess, run_gateway_with_watchdog};
@@ -17,6 +18,11 @@ pub fn run() {
                         .level(log::LevelFilter::Info)
                         .build(),
                 )?;
+            }
+
+            // Initialize System Tray
+            if let Err(e) = tray::create_tray(app.handle()) {
+                log::error!("Failed to create system tray: {}", e);
             }
 
             // Resolve the gateway script path relative to the app dir
