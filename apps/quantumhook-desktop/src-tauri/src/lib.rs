@@ -11,6 +11,8 @@ pub fn run() {
     let gateway_for_exit = gateway.clone();
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_os::init())
+        .plugin(tauri_plugin_fs::init())
         .setup(move |app| {
             if cfg!(debug_assertions) {
                 app.handle().plugin(
