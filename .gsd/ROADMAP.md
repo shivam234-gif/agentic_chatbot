@@ -17,7 +17,7 @@
 ## Phases
 
 ### Phase 0: Foundation (Weeks 1–3)
-**Status**: ⬜ Not Started
+**Status**: ✅ Complete
 **Objective**: Bootable Tauri app that spawns OpenClaw Gateway and connects.
 - [ ] Scaffold Tauri 2.0 project with React + Vite + TypeScript
 - [ ] Implement Gateway sidecar manager in Rust (spawn, health check, restart)
