@@ -32,7 +32,7 @@
 ---
 
 ### Phase 1: Config Studio (Weeks 4–7)
-**Status**: ⬜ Not Started
+**Status**: 🏗️ In Progress
 **Objective**: Users can fully configure OpenClaw without touching JSON.
 - [ ] Build Config Schema layer (Zod schemas for ALL config keys)
 - [ ] Implement Visual Config Editor (category sidebar + form fields)
