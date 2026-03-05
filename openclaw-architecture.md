@@ -213,7 +213,7 @@ What the user sees on first launch:
 2. "Let's set up your assistant" → Name it, pick a personality
 3. "Which apps should your assistant live in?" → Icon grid of channels
 4. Click WhatsApp → QR code appears → scan → done
-5. "Pick your AI brain" → Simple cards: "Fast" (Haiku), "Smart" (Sonnet), "Genius" (Opus) with a "Bring your own key" option
+5. "Pick your AI brain" → Simple cards: "Claude, OpenAI,Gemini" with a "Bring your own key" option , Under this the user can select the model from the dropdown.
 6. "You're all set!" → lands in a clean inbox view
 
 What's hidden: JSON config, sessions, tool configuration, agent routing, security policies. All set to safe defaults.
@@ -556,126 +556,9 @@ openclaw-gui/
 
 ---
 
-## 11. Critical Implementation Details
 
-### 11a. Gateway Sidecar (Rust)
 
-```rust
-// Pseudocode for the sidecar manager
-struct GatewayManager {
-    child: Option<Child>,
-    restart_count: u32,
-    last_restart: Instant,
-    config: GatewayConfig,
-}
-
-impl GatewayManager {
-    async fn start(&mut self) -> Result<()> {
-        // 1. Verify Node ≥22 is installed
-        // 2. Verify openclaw is installed globally
-        // 3. Spawn: openclaw gateway --port 18789 --verbose
-        // 4. Capture stdout/stderr to ring buffer
-        // 5. Start health check polling (GET /health every 5s)
-        // 6. Emit "gateway:started" event to frontend
-    }
-
-    async fn on_health_check_fail(&mut self) {
-        // 1. Increment restart_count
-        // 2. If restart_count > 3 in 60s → emit "gateway:fatal"
-        // 3. Else → restart with exponential backoff
-        // 4. Emit "gateway:restarting" to frontend
-    }
-}
-```
-
-### 11b. WebSocket Reconnection (Frontend)
-
-```typescript
-// State machine for WebSocket connection
-class GatewayWsClient {
-  private ws: WebSocket | null = null;
-  private messageQueue: Message[] = [];
-  private reconnectAttempt = 0;
-
-  connect() {
-    this.ws = new WebSocket('ws://127.0.0.1:18789');
-
-    this.ws.onopen = () => {
-      this.reconnectAttempt = 0;
-      this.flushQueue();        // Send buffered messages
-      this.emit('connected');
-    };
-
-    this.ws.onclose = () => {
-      this.emit('disconnected');
-      this.scheduleReconnect(); // Exponential backoff
-    };
-
-    this.ws.onerror = () => {
-      // Errors always followed by onclose — handled there
-    };
-  }
-
-  send(message: Message) {
-    if (this.ws?.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify(message));
-    } else {
-      this.messageQueue.push(message); // Buffer during disconnect
-    }
-  }
-
-  private scheduleReconnect() {
-    const delay = Math.min(1000 * 2 ** this.reconnectAttempt, 30000);
-    this.reconnectAttempt++;
-    setTimeout(() => this.connect(), delay);
-  }
-}
-```
-
-### 11c. Config Schema Pattern
-
-```typescript
-// Single schema drives all three config modes
-import { z } from 'zod';
-
-export const modelConfigSchema = z.object({
-  model: z.string()
-    .default('anthropic/claude-sonnet-4-5-20250929')
-    .describe('The AI model to use for the assistant'),
-
-  thinkingLevel: z.enum(['off','minimal','low','medium','high','xhigh'])
-    .default('off')
-    .describe('Reasoning depth — higher = slower but more accurate'),
-});
-
-// Metadata for UI rendering (separate from validation)
-export const modelConfigMeta = {
-  model: {
-    label: 'AI Model',
-    category: 'Model',
-    tier: 'consumer',  // visible in consumer mode
-    inputType: 'select',
-    options: [
-      { value: 'anthropic/claude-sonnet-4-5-20250929', label: 'Claude Sonnet (Smart)', tier: 'consumer' },
-      { value: 'anthropic/claude-opus-4-6', label: 'Claude Opus (Genius)', tier: 'consumer' },
-      { value: 'openai/gpt-4o', label: 'GPT-4o', tier: 'power' },
-      // ...more models for power/dev tiers
-    ],
-    helpText: 'Choose which AI brain powers your assistant.',
-  },
-  thinkingLevel: {
-    label: 'Thinking Depth',
-    category: 'Model',
-    tier: 'power',  // hidden in consumer mode
-    inputType: 'slider',
-    helpText: 'How much the AI "thinks" before responding.',
-  },
-};
-```
-
----
-
-## 12. What NOT to Build (Scope Control)
+## 11. What NOT to Build (Scope Control)
 
 As a solo developer, resist these temptations until post-v1:
 
@@ -684,12 +567,11 @@ As a solo developer, resist these temptations until post-v1:
 - **Don't build a cloud/hosted version.** Stay local-first.
 - **Don't build mobile apps yet.** Tauri 2.0 supports it, but desktop first.
 - **Don't build custom channel implementations.** Use OpenClaw's.
-- **Don't build a skill authoring IDE.** Skills marketplace (browse + install) is enough for v1.
 - **Don't over-optimize for performance.** Ship first, optimize later.
 
 ---
 
-## 13. Success Metrics
+## 12. Success Metrics
 
 Your v1 is successful if:
 

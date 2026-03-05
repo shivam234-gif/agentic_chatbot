@@ -48,7 +48,7 @@ export const OpenClawConfigSchema = z.object({
     server: z.object({
         port: z.number().int().min(1024).max(65535).default(3000),
         host: z.string().default('127.0.0.1'),
-    }).default({}),
+    }).default({ port: 3000, host: '127.0.0.1' }),
 });
 
 // ─── Inferred TypeScript types ─────────────────────────

@@ -4,7 +4,13 @@
 
 ## Overview
 
-Quantumhook Desktop is a **Tauri 2.0** desktop application that wraps the OpenClaw Gateway as a managed sidecar process. The Rust shell handles process lifecycle, health monitoring, and OS integration. The React frontend provides a wizard-driven, tiered UX. The Gateway (Node.js) remains unmodified and communicates via WebSocket.
+### Current State — Electron (What exists today)
+
+Quantumhook Desktop is **currently an Electron-based** desktop application. The Electron main process (`electron/main.ts`) spawns the OpenClaw Gateway as a Node.js child process on port 3000, then loads the React/Lit UI via Vite dev server (port 5173). The frontend (`src/ui/app.ts`) is a Lit web component (`<openclaw-app>`) that communicates with the Gateway over WebSocket.
+
+### Target State — Tauri 2.0 (Migration goal)
+
+The migration target is **Tauri 2.0**: replacing Electron with a Rust shell that uses the OS-native webview (~5–15 MB bundle vs Electron's ~150–200 MB). The Rust shell will manage the Gateway as a proper sidecar with lifecycle control, health checks, and auto-restart. The Lit frontend will be rewritten in React + shadcn/ui. See `ROADMAP.md` Phase 0 for the migration plan.
 
 ```
 ┌─────────────────────────────────────────────────────────┐
