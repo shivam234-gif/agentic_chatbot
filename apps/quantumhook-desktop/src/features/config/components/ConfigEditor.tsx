@@ -2,21 +2,26 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useConfigStore } from '../../../stores/configStore';
+import { useGatewayStore } from '../../../stores/gatewayStore';
 import { OpenClawConfig, OpenClawConfigSchema, OpenAIModels, AnthropicModels, GeminiModels } from '../schema/config.schema';
 import { ConfigSidebar, ConfigCategory } from './ConfigSidebar';
 import { RawJsonEditor } from './RawJsonEditor';
-import { AlertCircle, Save, Check, Code, LayoutTemplate } from 'lucide-react';
+import { AlertCircle, Save, Check, Code, LayoutTemplate, Copy, RefreshCw, ServerCrash } from 'lucide-react';
+import { copyFile, BaseDirectory } from '@tauri-apps/plugin-fs';
 
 type EditorMode = 'visual' | 'raw';
 
 export function ConfigEditor() {
     const { config, saveConfig } = useConfigStore();
+    const { status, connect, disconnect } = useGatewayStore();
     const [activeCategory, setActiveCategory] = useState<ConfigCategory>('app');
     const [editorMode, setEditorMode] = useState<EditorMode>('visual');
     const [isRawValid, setIsRawValid] = useState(true);
 
     const [isSaving, setIsSaving] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
+    const [isBackingUp, setIsBackingUp] = useState(false);
+    const [backupSuccess, setBackupSuccess] = useState(false);
 
     const {
         register,
@@ -40,6 +45,28 @@ export function ConfigEditor() {
 
         setSaveSuccess(true);
         setTimeout(() => setSaveSuccess(false), 2000);
+    };
+
+    const handleBackup = async () => {
+        setIsBackingUp(true);
+        try {
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            await copyFile('openclaw.json', `openclaw.backup-${timestamp}.json`, {
+                fromPathBaseDir: BaseDirectory.AppData,
+                toPathBaseDir: BaseDirectory.AppData
+            });
+            setBackupSuccess(true);
+            setTimeout(() => setBackupSuccess(false), 2000);
+        } catch (e) {
+            console.error('Backup failed:', e);
+        } finally {
+            setIsBackingUp(false);
+        }
+    };
+
+    const handleRestartGateway = () => {
+        disconnect();
+        setTimeout(() => connect(`ws://127.0.0.1:${config.server.port}/ws`), 500);
     };
 
     const isSaveDisabled = (editorMode === 'visual' ? !isDirty : !isRawValid) || isSaving;
@@ -78,8 +105,8 @@ export function ConfigEditor() {
                             onClick={editorMode === 'visual' ? handleSubmit(onSubmit) : undefined}
                             disabled={isSaveDisabled}
                             className={`flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${isSaveDisabled
-                                    ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
-                                    : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                                ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
+                                : 'bg-emerald-600 hover:bg-emerald-500 text-white'
                                 }`}
                         >
                             {saveSuccess ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
@@ -118,6 +145,21 @@ export function ConfigEditor() {
                                             <option value="power_user">Power User (Advanced)</option>
                                             <option value="developer">Developer (Raw Configs & Logs)</option>
                                         </select>
+                                    </div>
+
+                                    <div className="pt-4 border-t border-zinc-800">
+                                        <h3 className="text-base font-medium text-white">Data Management</h3>
+                                        <p className="text-sm text-zinc-400 mt-1 mb-3">Backup your configuration file locally.</p>
+                                        <button
+                                            type="button"
+                                            onClick={handleBackup}
+                                            disabled={isBackingUp}
+                                            className="flex items-center space-x-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-md text-sm font-medium transition-colors"
+                                        >
+                                            {backupSuccess ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                                            <span>{isBackingUp ? 'Backing up...' : backupSuccess ? 'Backup Created' : 'Create Local Backup'}</span>
+                                        </button>
+                                        <p className="text-xs text-zinc-500 mt-2">Backups are saved to your OS AppData directory next to openclaw.json.</p>
                                     </div>
                                 </section>
                             )}
@@ -254,6 +296,22 @@ export function ConfigEditor() {
                                             {...register('server.host')}
                                             className="mt-3 block w-full rounded-md border border-zinc-800 bg-zinc-900 py-2 px-3 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                                         />
+                                    </div>
+
+                                    <div className="pt-4 border-t border-zinc-800">
+                                        <h3 className="text-base font-medium text-white">Connection Test</h3>
+                                        <p className="text-sm text-zinc-400 mt-1 mb-3">
+                                            Current sidecar gateway state is: <span className={`font-semibold ml-1 ${status === 'CONNECTED' ? 'text-emerald-400' : 'text-red-400'}`}>{status}</span>
+                                        </p>
+                                        <button
+                                            type="button"
+                                            onClick={handleRestartGateway}
+                                            className="flex items-center space-x-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-md text-sm font-medium transition-colors"
+                                        >
+                                            {status === 'CONNECTED' ? <RefreshCw className="w-4 h-4" /> : <ServerCrash className="w-4 h-4" />}
+                                            <span>{status === 'CONNECTED' ? 'Restart Connection' : 'Reconnect Gateway'}</span>
+                                        </button>
+                                        <p className="text-xs text-zinc-500 mt-2">Pings the gateway WebSocket. Sidecar manages its own restart threshold.</p>
                                     </div>
                                 </section>
                             )}

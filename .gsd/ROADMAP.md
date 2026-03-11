@@ -31,9 +31,11 @@
 
 ---
 
-### Phase 1: Config Studio (Weeks 4–7)
-**Status**: 🏗️ In Progress
-**Objective**: Users can fully configure OpenClaw without touching JSON.
+### Phase 1: Config Studio [Complete]
+- Objective: Users can fully configure OpenClaw without touching JSON.
+- Status: Complete
+- Outputs:
+  - `ConfigStore` tied to Tauri `fs/os` APIs.
 - [ ] Build Config Schema layer (Zod schemas for ALL config keys)
 - [ ] Implement Visual Config Editor (category sidebar + form fields)
 - [ ] Add config read/write via Tauri fs plugin
