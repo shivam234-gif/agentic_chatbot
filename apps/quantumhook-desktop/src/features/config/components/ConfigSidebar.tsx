@@ -5,9 +5,10 @@ export type ConfigCategory = 'app' | 'openai' | 'anthropic' | 'google' | 'channe
 interface ConfigSidebarProps {
     activeCategory: ConfigCategory;
     onSelect: (cat: ConfigCategory) => void;
+    disabled?: boolean;
 }
 
-export function ConfigSidebar({ activeCategory, onSelect }: ConfigSidebarProps) {
+export function ConfigSidebar({ activeCategory, onSelect, disabled }: ConfigSidebarProps) {
     const categories: { id: ConfigCategory; label: string; icon: React.ReactNode }[] = [
         { id: 'app', label: 'App Settings', icon: <Settings className="w-4 h-4" /> },
         { id: 'openai', label: 'OpenAI', icon: <Cpu className="w-4 h-4" /> },
@@ -18,7 +19,7 @@ export function ConfigSidebar({ activeCategory, onSelect }: ConfigSidebarProps) 
     ];
 
     return (
-        <div className="w-64 border-r border-zinc-800 bg-zinc-900 h-full flex flex-col">
+        <div className={`w-64 border-r border-zinc-800 bg-zinc-900 h-full flex flex-col transition-opacity ${disabled ? 'opacity-50 pointer-events-none' : ''}`}>
             <div className="p-4 border-b border-zinc-800">
                 <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">Configuration</h2>
             </div>
@@ -28,8 +29,8 @@ export function ConfigSidebar({ activeCategory, onSelect }: ConfigSidebarProps) 
                         key={cat.id}
                         onClick={() => onSelect(cat.id)}
                         className={`w-full flex items-center space-x-3 px-3 py-2 text-sm rounded-md transition-colors ${activeCategory === cat.id
-                                ? 'bg-zinc-800 text-white font-medium'
-                                : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
+                            ? 'bg-zinc-800 text-white font-medium'
+                            : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
                             }`}
                     >
                         {cat.icon}
