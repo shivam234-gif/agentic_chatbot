@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { BaseDirectory, readTextFile, writeTextFile, exists, mkdir } from '@tauri-apps/plugin-fs';
-import { OpenClawConfig, OpenClawConfigSchema } from '../features/config/schema/config.schema';
+import type { OpenClawConfig } from '../features/config/schema/config.schema';
+import { OpenClawConfigSchema } from '../features/config/schema/config.schema';
 
 const CONFIG_FILENAME = 'openclaw.json';
 
