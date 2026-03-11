@@ -73,7 +73,7 @@ export const OpenClawConfigSchema = z.object({
         google: LLMProviderSchema.extend({
             model: z.enum(GeminiModels).default('gemini-2.5-flash-preview-05-20'),
         }).optional(),
-    }),
+    }).default({}),
     channels: ChannelsSchema.default({
         whatsapp: { enabled: false },
         telegram: { enabled: false },
