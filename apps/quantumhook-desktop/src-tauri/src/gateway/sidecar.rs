@@ -24,8 +24,11 @@ impl GatewayProcess {
         let child = Command::new("node")
             .arg(gateway_script)
             .env("PORT", "3000")
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
+            // Disable auth for local desktop — the gateway runs on 127.0.0.1 only
+            .env("OPENCLAW_GATEWAY_AUTH_MODE", "none")
+            .env("OPENCLAW_GATEWAY_TOKEN", "desktop-local-dev")
+            .stdout(Stdio::inherit())
+            .stderr(Stdio::inherit())
             .kill_on_drop(true)
             .spawn()
             .map_err(|e| format!("Failed to spawn Gateway: {}", e))?;

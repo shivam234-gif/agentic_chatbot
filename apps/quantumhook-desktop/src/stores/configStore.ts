@@ -17,6 +17,9 @@ interface ConfigState {
 // Generate the fully expanded default object
 const DEFAULT_CONFIG = OpenClawConfigSchema.parse({});
 
+// Helper to check if we are actually running inside Tauri 
+const isTauri = () => typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+
 export const useConfigStore = create<ConfigState>((set) => ({
     config: DEFAULT_CONFIG,
     isLoading: true,
@@ -25,6 +28,12 @@ export const useConfigStore = create<ConfigState>((set) => ({
     loadConfig: async () => {
         try {
             set({ isLoading: true, error: null });
+
+            if (!isTauri()) {
+                console.warn('[configStore] Not running in Tauri context. Using default config.');
+                set({ config: DEFAULT_CONFIG, isLoading: false });
+                return;
+            }
 
             const fileExists = await exists(CONFIG_FILENAME, { baseDir: BaseDirectory.AppData });
             if (!fileExists) {
@@ -57,6 +66,12 @@ export const useConfigStore = create<ConfigState>((set) => ({
         try {
             set({ isLoading: true, error: null });
 
+            if (!isTauri()) {
+                console.warn('[configStore] Not running in Tauri context. Cannot save to FS.');
+                set({ config: newConfig, isLoading: false });
+                return;
+            }
+
             // Ensure the AppData directory actually exists before writing
             const dirExists = await exists('', { baseDir: BaseDirectory.AppData });
             if (!dirExists) {
@@ -82,6 +97,12 @@ export const useConfigStore = create<ConfigState>((set) => ({
     resetConfig: async () => {
         try {
             set({ isLoading: true, error: null });
+
+            if (!isTauri()) {
+                set({ config: DEFAULT_CONFIG, isLoading: false });
+                return;
+            }
+
             await writeTextFile(CONFIG_FILENAME, JSON.stringify(DEFAULT_CONFIG, null, 2), {
                 baseDir: BaseDirectory.AppData,
             });
